@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    callback模式：服务器中提供的js文件回调客户端的一个函数，客户端页面对应提供一个回调函数的声明
+
+    创建一个回调函数，然后在远程服务上调用这个函数并且将JSON 数据形式作为参数传递，完成回调。
+
+    <script>
+        function callback(data){
+            if(data.code==1){
+                document.write( data.obj.name +"  "+ data.obj.age );
+            }
+        }
+    </script>
+    <script type="text/javascript" src="http://localhost:8080/testjsonp1/test2.js"></script>
+    将JSON数据填充进回调函数，这就是JSONP的JSON+Padding的含义
+</body>
+</html>

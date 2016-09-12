@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form name="myform" >
+        <input type="hidden" name="op" value="add" />
+        <p>学生名:<input type="text" name="sname" id="sname" value="张三"/></p>
+        <p>学生年龄:<input type="text" name="age" id="age" value="22" /></p>
+        <p><input type="button" onclick="add()" value="添加"/></p>
+    </form>
+
+    <p id="result"></p>
+
+    <span id="showall">显示所有学生信息_xml</span>
+
+    <span id="showallByJson">显示所有学生信息_Json</span>
+    <hr />
+
+    <table border="1" width="700px">
+        <thead>
+        <tr>
+            <td>编号</td>
+            <td>姓名</td>
+            <td>年龄</td>
+        </tr>
+        </thead>
+        <tbody id="students">
+
+        </tbody>
+    </table>
+
+    <script>
+        function createXHR(){
+            if(typeof XMLHttpRequest != 'undefined'){
+                //兼容IE7+，现代主流浏览器
+                return new XMLHttpRequest();
+            }else if(typeof ActiveXObject != 'undefined'){
+                //兼容IE7-
+                if(typeof arguments.callee.activeXString != "string"){
+                    var version=["MSXML2.XMLHttp.6.0", "MSXML2.XMLHttp.3.0", "MSXML2.XMLHttp"];
+                    for (var i = 0; i < version.length; i++) {
+                        try {
+                            new ActiveXObject(version[i]);
+                            arguments.callee.activeXString = version[i];
+                            break;
+                        }catch(ex){
+                            console.log(ex);
+                        }
+                    }
+                }
+                return new ActiveXObject(arguments.callee.activeXString);
+            }else{
+                throw new Error("没有XHR对象");
+            }
+        }
+
+        var request;
+
+        //回调函数用于接收服务器端的响应
+        function listener(){
+            if(  request.readyState==4&& request.status==200 ){
+                document.getElementById("result").innerHTML= request.responseText;
+            }
+        }
+
+        function add(){
+            request=createXHR();    // 创建一个http对象
+            if( request ){
+                request.onreadystatechange= listener;
+                request.open("POST","http://localhost:8080/ajaxTest2/student.action", true);
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send(   "op=add&sname="+document.getElementById("sname").value+"&age="+document.getElementById("age").value );
+            }
+        }
+        
+        document.getElementById("showall").onclick=function () {
+            request=createXHR();
+            if( request ){
+                request.onreadystatechange= findAlllistener;
+                request.open("POST","http://localhost:8080/ajaxTest2/student.action", true);
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send(   "op=findAll" );
+            }
+        }
+
+        function findAlllistener(){
+            if(  request.readyState==4&& request.status==200 ){
+                var str="";
+
+                var xmldom=  request.responseXML ;
+
+                //var xmldom=yc.parseTextToXmlDomObject( xmltext );
+              // alert(  xmldom.getElementsByTagName("students")[0].nodeName );
+                var nodelist=xmldom.getElementsByTagName("student");
+                for( var i=0;i<nodelist.length;i++){
+                    str+="<tr>";
+                    var node=nodelist[i];
+                    var id=node.getAttribute('id');
+                    var sname=	node.getElementsByTagName("sname")[0].childNodes[0].nodeValue;
+                    var age=node.getElementsByTagName("age")[0].childNodes[0].nodeValue;
+
+                    str+="<td>"+id+"</td>";
+                    str+="<td>"+sname+"</td>";
+                    str+="<td>"+age+"</td>";
+
+                    str+="</tr>";
+                }
+
+                document.getElementById("students").innerHTML=str;
+
+            }
+        }
+
+        document.getElementById("showallByJson").onclick=function(){
+            request=createXHR();
+            if( request ){
+                request.onreadystatechange= findAlllistener2;
+                request.open("POST","http://localhost:8080/ajaxTest2/student.action", true);
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send(   "op=findAll2" );
+            }
+        }
+
+        function findAlllistener2(){
+            if(  request.readyState==4&& request.status==200 ){
+                var str="";
+                var jsonString=  request.responseText ;    //取出返回的结果  ( json字符串)
+                //调用eval，将json字符串转为json对象.
+                //var jsonarray=eval(  '('+jsonString+')'  );
+
+                var jsonarray= eval(  '('+jsonString+')'  );
+
+                for( var i=0;i<jsonarray.length;i++){
+                    str+="<tr>";
+                    var student=jsonarray[i];
+                    var id=student.id;
+                    var sname=	student.sname;
+                    var age=student.age;
+
+                    str+="<td>"+id+"</td>";
+                    str+="<td>"+sname+"</td>";
+                    str+="<td>"+age+"</td>";
+
+                    str+="</tr>";
+                }
+
+                document.getElementById("students").innerHTML=str;
+
+            }
+        }
+    </script>
+</body>
+</html>

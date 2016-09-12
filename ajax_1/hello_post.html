@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    <form action="" method="post">
+        用户名:<input type="text" name="name" id="name" /><br />
+        密码:<input type="password" name="password" id="password" /><br />
+        <input type="button" value="登录" id="btn" onclick="login()" />
+        <p id="result"></p>
+    </form>
+
+    <script>
+        function createXHR(){
+            if(typeof XMLHttpRequest != 'undefined'){
+                //兼容IE7+，现代主流浏览器
+                return new XMLHttpRequest();
+            }else if(typeof ActiveXObject != 'undefined'){
+                //兼容IE7-
+                if(typeof arguments.callee.activeXString != "string"){
+                    var version=["MSXML2.XMLHttp.6.0", "MSXML2.XMLHttp.3.0", "MSXML2.XMLHttp"];
+                    for (var i = 0; i < version.length; i++) {
+                        try {
+                            new ActiveXObject(version[i]);
+                            arguments.callee.activeXString = version[i];
+                            break;
+                        }catch(ex){
+                            console.log(ex);
+                        }
+                    }
+                }
+                return new ActiveXObject(arguments.callee.activeXString);
+            }else{
+                throw new Error("没有XHR对象");
+            }
+        }
+
+        var request;
+        function login(){
+            request=createXHR();
+
+            //如果request存在，那么就开始发送请求
+            if(request){
+                //取出用户和密码
+                var name=document.getElementById("name").value;
+                var password=document.getElementById("password").value;
+                request.onreadystatechange= listener;
+                //open(   method,   url  [, 同异步的标识,[username, password]]  );     建立客户端与服务器的联接
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.open("POST","http://localhost:8080/ajaxTest1/login.action", true);
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send(   "name="+name+"&password="+password );
+            }
+        }
+
+
+        //回调函数用于接收服务器端的响应
+        function listener() {
+            /*响应处理函数结构码
+            * 1、载入中
+            * 2、载入完成
+            * 3、交互
+            * 4、完成，可用
+            * */
+            console.log(request.readyState);
+            /*
+            * 响应状态码
+            * 200 OK
+            * 404 Not Found
+            * 详情，请见https://www.w3.org/Protocols/rfc2616/rfc2616-sec10.html
+            * */
+            console.log(request.status);
+            console.log(request.statusText);
+
+            console.log("-------------------");
+
+            if(request.readyState==4 && request.status==200){
+                console.log("服务器正常响应...");
+                console.log(	request.responseText	 );
+               // console.log(	request.responseBody	 );
+               // console.log(	request.responseXML	 );
+                document.getElementById("result").innerHTML= request.responseText;
+            }
+        }
+    </script>
+</body>
+</html>

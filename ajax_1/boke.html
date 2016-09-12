@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+
+    <form name="myform">
+        <input type="hidden" name="op" value="add" />
+        博客:<br /><textarea name="content" id="content" cols="40" rows="20"></textarea>
+
+        <input type="button" id="btn" value="添加" />
+    </form>
+    <p id="result"></p>
+
+    <input type="button" id="showcontent" value="查看内容" />
+
+    <script>
+        function createXHR(){
+            if(typeof XMLHttpRequest != 'undefined'){
+                //兼容IE7+，现代主流浏览器
+                return new XMLHttpRequest();
+            }else if(typeof ActiveXObject != 'undefined'){
+                //兼容IE7-
+                if(typeof arguments.callee.activeXString != "string"){
+                    var version=["MSXML2.XMLHttp.6.0", "MSXML2.XMLHttp.3.0", "MSXML2.XMLHttp"];
+                    for (var i = 0; i < version.length; i++) {
+                        try {
+                            new ActiveXObject(version[i]);
+                            arguments.callee.activeXString = version[i];
+                            break;
+                        }catch(ex){
+                            console.log(ex);
+                        }
+                    }
+                }
+                return new ActiveXObject(arguments.callee.activeXString);
+            }else{
+                throw new Error("没有XHR对象");
+            }
+        }
+
+        var request;
+
+        //回调函数用于接收服务器端的响应
+        function listener(){
+            if(  request.readyState==4&& request.status==200 ){
+                document.getElementById("content").value="";
+                alert( request.responseText );
+            }
+        }
+
+        //添加
+        document.getElementById("btn").onclick=function(){
+            request=createXHR();
+            if( request ){
+                request.onreadystatechange= listener;
+                request.open("POST","http://localhost:8080/ajaxTest2/boke.action", true);
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send( "op=add&content="+ document.getElementById("content").value  );
+            }
+        }
+
+        //显示
+        document.getElementById("showcontent").onclick=function () {
+            request=createXHR();
+            if( request ){
+
+                request.onreadystatechange= listener2;
+                request.open("POST","http://localhost:8080/ajaxTest2/boke.action", true);
+                //当使用post发送表单数据时，要加入一个请求头.这是一个表单数据
+                request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+                //POST方式请求服务器时，参数拼接后放在  send中,多个参之间用 & 联接
+                request.send(  "op=findAll"  );
+            }
+        }
+
+        function listener2(){
+            if(  request.readyState==4&& request.status==200 ){
+                alert( request.responseText );
+               document.getElementById("result").innerHTML= request.responseText;
+            }
+        }
+    </script>
+</body>
+</html>

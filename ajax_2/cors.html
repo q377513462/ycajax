@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+    ajax跨域：为什么会有这个问题？ 因为有同源策略
+
+    同源策略：同源策略（Same origin policy）是一种约定，它是浏览器最核心也最基本的安全功能，如果缺少了同源策略，则浏览器的正常功能可能都会
+    受到影响。可以说Web是构建在同源策略基础之上的，浏览器只是针对同源策略的一种实现。
+
+    http://www.a.com/a.]s
+    http://www.a.com/b.]s
+    同一域名下	允许
+    http://www.a.com/lab/a.]s
+    http://www.a.com/script/b.]s
+    同一域名下不同文件夹	允许
+    http://www.a.com:8000/a.]s
+    http://www.a.com/b.]s
+    同一域名，不同端口	不允许
+    http://www.a.com/a.js
+    https://www.a.com/b.js
+    同一域名，不同协议	不允许
+    http://www.a.com/a.js
+    http：//70.32.92.74/b.js
+    域名和域名对应ip	不允许
+    http://www.a.com/a.js
+    http://script.a.com/b.js
+    主域相同，子域不同	不允许
+    http://www.a.com/a.js
+    http://a.com/b.js
+    同一域名，不同二级域名（同上）	不允许（cookie这种情况下也不允许访问）
+    http://www.cnbbgs.eom/a.js
+    http://www.a.com/b.]s
+    不同域名	不允许
+
+    所谓同源是指，域名，协议，端口相同。
+    比如：在本地的html页面发送ajax给服务器是访问不到的，因为一个协议为file:/// ，一个是http://协议，协议不同，违背同源策略，请求不到数据
+
+    解决办法：
+    1、使用框架要素iframe src=""在当前 Web 页面中创建新区域，并且使用 GET 请求获取任何第三方资源。不过，获取资源后，框架中的内容会受到同源策略的限制。
+
+    2、 CORS  - 全域策略  - 服务器修改   -> 响应头中增加一个协议
+    response.setHeader("Access-Control-Allow-Origin","*");
+    缺点：会忽略cookies
+          post数据格式有限制，只支持‘text/plain','application/x-www-urlencoded'and'multipart/form-data'，其中’text/plain'默认支持
+
+    3、JSONP
+    缺点: 只支持  GET,不支持POST
+
+    script标签的src属性并不被同源策略所约束，所以可以获取任何服务器上脚本并执行。
+    <script type="text/javascript" src="http://localhost:8080/testjsonp1/test.js"></script>
+</body>
+</html>
